@@ -11,6 +11,7 @@ import com.example.triviaapp.controller.AppController;
 import com.example.triviaapp.model.Question;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +23,7 @@ public class QuestionBank {
     private String url = "https://raw.githubusercontent.com/curiousily/simple-quiz/master/script/statements-data.json";
     private ArrayList<Question> questionArrayList = new ArrayList<>();
 
-    public List<Question> getQuestion(){
-        Log.d("Reach", "getQuestion: ");
+    public List<Question> getQuestion(final AnswerListAsyncResponse callBack){
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
                 Request.Method.GET,
                 url,
@@ -31,7 +31,18 @@ public class QuestionBank {
                 new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
-                        Log.d("Game", "onResponse: " + response);
+                        for(int i=0;i<response.length();i++){
+                            try {
+                                Question question = new Question();
+                                question.setAnswer(response.getJSONArray(i).get(0).toString());
+                                question.setAnswerTrue((boolean)response.getJSONArray(i).get(1));
+                                questionArrayList.add(question);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            Log.d("nup", "onResponse: " + questionArrayList);
+                        }
+
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -40,8 +51,7 @@ public class QuestionBank {
             }
         });
         AppController.getInstance().addToRequestQueue(jsonArrayRequest);
-        Log.d("gotit", "getQuestion: " + jsonArrayRequest.getUrl());
-        return null;
+        return questionArrayList;
     }
 
 }
