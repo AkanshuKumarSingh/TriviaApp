@@ -40,8 +40,8 @@ public class QuestionBank {
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
-                            Log.d("nup", "onResponse: " + questionArrayList);
                         }
+                        if(callBack != null) callBack.processFinished(questionArrayList);
 
                     }
                 }, new Response.ErrorListener() {
