@@ -4,6 +4,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
 import android.animation.ValueAnimator;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Animatable;
 import android.os.Bundle;
@@ -27,6 +29,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     ValueAnimator anim;
+    private TextView cs;
     private TextView counter;
     private TextView quesTextView;
     private Button trueButton;
@@ -37,11 +40,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private List<Question> questionList;
     private boolean answer;
     private CardView cardView;
+    SharedPreferences sharedPreferences;
+    int score = 0;
+    int highest_score = 0;
+    private TextView hs;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        sharedPreferences = this.getSharedPreferences("com.example.triviaapp", Context.MODE_PRIVATE);
         nextButton = findViewById(R.id.nextButton);
         prevButton = findViewById(R.id.prevButton);
         trueButton = findViewById(R.id.trueButton);
@@ -49,6 +56,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         quesTextView = findViewById(R.id.quesTextView);
         counter = findViewById(R.id.counter);
         cardView = findViewById(R.id.cardView);
+        hs = findViewById(R.id.hs);
+        cs = findViewById(R.id.cs);
+        highest_score = sharedPreferences.getInt("no",0);
+        hs.setText("Highest Score : " + highest_score);
         quesTextView.setBackgroundColor(getResources().getColor(R.color.back));
         questionList = new QuestionBank().getQuestion(new AnswerListAsyncResponse() {
             @Override
@@ -101,16 +112,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 anim.end();
                 quesTextView.setBackgroundColor(getResources().getColor(R.color.back));
                 updateQuestion(nextButton);
-
                 break;
             case R.id.trueButton:
                 if (answer == true) {
                     Toast.makeText(MainActivity.this, "Correct Answer :) ", Toast.LENGTH_SHORT).show();
                     shakeAnimation();
+                    score++;
                     } else {
                     Toast.makeText(MainActivity.this, "InCorrect Answer :( ", Toast.LENGTH_SHORT).show();
                     shakeAnimation1();
                 }
+                increaseScore(1);
                 break;
             case R.id.falseButton:
                 if (answer == false) {
@@ -119,9 +131,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     } else {
                     Toast.makeText(MainActivity.this, "InCorrect Answer :( ", Toast.LENGTH_SHORT).show();
                 }
+                increaseScore(-1);
                 break;
         }
     }
+
+    void increaseScore(int i){
+        highest_score = sharedPreferences.getInt("no",0);
+        if( i == -1) {
+            score++;
+            cs.setText("Current sc : " + Integer.toString(score));
+            if(highest_score < score){
+                sharedPreferences.edit().putInt("no",score).apply();
+                hs.setText("Highest score : " + score);
+            }
+        }else{
+            score--;
+            cs.setText("Current sc : " + Integer.toString(score));
+        }
+    }
+
     void shakeAnimation(){
         anim = ValueAnimator.ofFloat(0, 3);
         anim.setDuration(500);
@@ -152,7 +181,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         CardView cardView = findViewById(R.id.cardView);
         quesTextView.setBackgroundColor(getResources().getColor(R.color.wrong));
         cardView.animate().setDuration(700).rotationBy(360);
-
     }
 
 }
